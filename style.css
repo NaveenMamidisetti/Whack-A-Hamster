@@ -1,0 +1,228 @@
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    text-align: center;
+    background: linear-gradient(to bottom, #87CEEB, #F0F8FF);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* Keep this to prevent scrollbars */
+}
+
+/* New: Main wrapper for all game pages */
+.main-wrapper {
+    width: 100%;
+    height: 100vh; /* Take full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* For absolute positioning of pages */
+}
+
+/* New: Styles for the "pages" */
+.game-page {
+    position: absolute; /* Position pages on top of each other */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #87CEEB, #F0F8FF); /* Match body background */
+    transition: opacity 0.5s ease-in-out; /* Smooth transition when changing pages */
+    opacity: 0; /* Start invisible */
+}
+
+.game-page.active {
+    display: flex; /* Show active page */
+    opacity: 1; /* Make visible */
+    z-index: 10; /* Ensure active page is on top */
+}
+
+
+.game-container {
+    background: #f7e6c7;
+    border: 10px solid #8B4513;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    width: 95vw;
+    max-width: 700px;
+    box-sizing: border-box;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0; /* Prevent container from shrinking smaller than content */
+    min-height: 400px; /* Ensure a minimum height for all screens */
+    justify-content: center; /* Vertically center content if there's extra space */
+}
+
+h1 {
+    color: #4CAF50;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    margin: 10px 0 20px;
+    font-size: 2.5em;
+}
+
+h2 {
+    color: #5D4037;
+    margin-bottom: 20px;
+}
+
+/* No direct .screen styles needed anymore, replaced by .game-page */
+
+/* Controls & Buttons */
+.controls, .level-selection-buttons {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.game-buttons {
+    margin-top: 20px;
+    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.game-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    box-shadow: 0 5px #388E3C;
+    transition: all 0.1s ease;
+    min-width: 100px;
+}
+
+.game-button:hover {
+    background-color: #43A047;
+    box-shadow: 0 3px #388E3C;
+    transform: translateY(2px);
+}
+
+.game-button:active {
+    background-color: #388E3C;
+    box-shadow: 0 0 #388E3C;
+    transform: translateY(5px);
+}
+
+.level-button {
+    min-width: 130px;
+    font-size: 1.2em;
+    padding: 12px 25px;
+}
+
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #333;
+    background-color: #fcefdc;
+    border-radius: 10px;
+    padding: 8px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+.game-info > div {
+    padding: 0 8px;
+}
+
+/* Grid Styling */
+#grid-container {
+    display: grid;
+    background-color: #a0522d;
+    border: 8px solid #6b4226;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
+    margin: 0 auto;
+    transition: all 0.5s ease;
+    max-width: 100%;
+    flex-grow: 1;
+    box-sizing: border-box;
+}
+
+.hole-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at 50% 50%, #4a2c1a, #2e1c0f);
+    border-radius: 50%;
+    border: 5px solid #8B4513;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 5px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    cursor: url('https://raw.githubusercontent.com/google/material-design-icons/master/png/action/build/2x/baseline_build_black_48dp.png') 24 24, url('https://icons.iconarchive.com/icons/custom-icon-design/pretty-office-10/256/Hammer-icon.png') 128 128, pointer;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.hole-wrapper.glow {
+    box-shadow: 0 0 20px 8px rgba(255, 255, 0, 0.7), inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.hamster {
+    position: absolute;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 80%;
+    background-image: url('https://em-content.zobj.net/thumbs/120/apple/354/hamster_1f439.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    transition: bottom 0.2s ease-out, transform 0.1s ease-out;
+}
+
+.hole-wrapper.active .hamster {
+    bottom: 5%;
+}
+
+.hamster.flinch {
+    transform: translateX(-50%) scale(0.9);
+    opacity: 0.8;
+}
+
+/* Score and High Score Displays */
+#scoreDisplay, #levelHighScoreDisplay {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.high-scores p {
+    font-size: 1em;
+    color: #555;
+    margin: 5px 0;
+}
+
+#gameOverScreen p {
+    font-size: 1.2em;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+#newHighScoreMessage {
+    color: #E67E22;
+    font-weight: bold;
+}
