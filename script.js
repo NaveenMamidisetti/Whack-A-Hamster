@@ -36,38 +36,40 @@ const levelHighScoreDisplay = document.getElementById("levelHighScoreDisplay");
 const currentLevelDisplay = document.getElementById("currentLevelDisplay");
 const pauseResumeButton = document.getElementById("pauseResumeButton");
 const endGameButton = document.getElementById("endGameButton");
+const timerDisplay = document.getElementById("timerDisplay");
 
 // DOM Elements - Game Over Page
 const finalScoreDisplay = document.getElementById("finalScore");
 const newHighScoreMessage = document.getElementById("newHighScoreMessage");
 const playAgainButton = document.getElementById("playAgainButton");
 
-
 // Game State Variables
 let score = 0;
 let baseInterval = 1200;
 let currentInterval = baseInterval;
-let spawnTimer = null; // Holds the timeout ID for current hamster's disappearance
+let spawnTimer = null;
 let currentHoleWrappers = [];
 let queue = new RandomQueue();
 let activeMoleIndex = -1;
 let gamePaused = false;
 let currentLevelSize = 3;
-let highScores = {
-    '3': 0, // Easy (3x3)
-    '4': 0, // Intermediate (4x4)
-    '5': 0  // Master (5x5)
-};
+let highScores = { '3': 0, '4': 0, '5': 0 };
 
-// --- Page Navigation Functions ---
+// Timer Variables
+let totalGameTime = 60;
+let timeLeft = totalGameTime;
+let timerInterval = null;
+let lastResumeTime = null;
+let accumulatedPausedTime = 0;
+
+// --- Page Navigation ---
 function showPage(pageElement) {
     document.querySelectorAll('.game-page').forEach(page => {
         page.classList.remove('active');
     });
-    // Add a short delay to allow transition to play out
     setTimeout(() => {
         pageElement.classList.add('active');
-    }, 10); // A small delay to ensure CSS transition triggers
+    }, 10);
 }
 
 function updateHighScoresDisplay() {
@@ -78,9 +80,7 @@ function updateHighScoresDisplay() {
 
 function loadHighScores() {
     const savedScores = localStorage.getItem('whackAHamsterHighScores');
-    if (savedScores) {
-        highScores = JSON.parse(savedScores);
-    }
+    if (savedScores) highScores = JSON.parse(savedScores);
     updateHighScoresDisplay();
 }
 
@@ -88,39 +88,35 @@ function saveHighScores() {
     localStorage.setItem('whackAHamsterHighScores', JSON.stringify(highScores));
 }
 
-// --- Game Logic Functions ---
+// --- Timer ---
+function startTimer() {
+    lastResumeTime = Date.now();
+    timerInterval = setInterval(() => {
+        if (!gamePaused) {
+            const elapsed = Math.floor((Date.now() - lastResumeTime - accumulatedPausedTime) / 1000);
+            timeLeft = totalGameTime - elapsed;
+            timerDisplay.textContent = `Time: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                endGame();
+            }
+        }
+    }, 500);
+}
+
+// --- Game Logic ---
 function createGrid(size) {
     gridContainer.innerHTML = "";
     currentHoleWrappers = [];
 
-    const gridPadding = 15; // From CSS
-    const gridBorder = 8; // From CSS
-    
-    // Get the *actual* client width of the gridContainer after CSS has rendered it
-    // Use a temporary div if gridContainer isn't visible yet
-    let tempGridContainer = gridContainer;
-    if (gamePage.classList.contains('active') === false) {
-        // If gamePage is not active, we can temporarily show it or use a proxy
-        // For robustness, let's make sure gridContainer is measured when gamePage is active
-        // This function should primarily be called when gamePage is active or about to be.
-        // If called from start screen, gridContainer.clientWidth might be 0.
-        // A common solution is to have a fixed max-width for the grid or ensure the gamePage is briefly shown.
-        // For now, assuming createGrid is called when gamePage is active or sizing is less critical
-    }
-
-
+    const gridPadding = 15;
+    const gridBorder = 8;
     const availableWidth = gridContainer.clientWidth - (2 * gridPadding) - (2 * gridBorder);
+    let gap = 10;
+    let holeSize = (availableWidth - (size - 1) * gap) / size;
 
-    let gap = 10; // Base gap from CSS
-
-    let holeSize;
-    // Calculate hole size dynamically to fit the grid
-    // Formula: (Total available width - total gap space) / number of holes
-    holeSize = (availableWidth - (size - 1) * gap) / size;
-    
-    // Ensure holeSize doesn't become too small (e.g., min 50px) or too large
-    holeSize = Math.max(holeSize, 50); // Minimum size
-    holeSize = Math.min(holeSize, 120); // Maximum size to prevent huge holes on large screens
+    holeSize = Math.max(holeSize, 50);
+    holeSize = Math.min(holeSize, 120);
 
     gridContainer.style.gridTemplateColumns = `repeat(${size}, ${holeSize}px)`;
     gridContainer.style.gridTemplateRows = `repeat(${size}, ${holeSize}px)`;
@@ -130,7 +126,6 @@ function createGrid(size) {
         const holeWrapper = document.createElement("div");
         holeWrapper.classList.add("hole-wrapper");
         holeWrapper.dataset.index = i;
-
         holeWrapper.style.width = `${holeSize}px`;
         holeWrapper.style.height = `${holeSize}px`;
 
@@ -157,9 +152,8 @@ function handleHamsterHit(event) {
 
         score++;
         scoreDisplay.textContent = `Score: ${score}`;
-
-        clearTimeout(spawnTimer); // Clear the timeout for the current hamster's natural disappearance
-        activeMoleIndex = -1; // No mole is active anymore
+        clearTimeout(spawnTimer);
+        activeMoleIndex = -1;
 
         setTimeout(() => {
             holeWrapper.classList.remove("active");
@@ -169,19 +163,17 @@ function handleHamsterHit(event) {
             if (score % 5 === 0 && currentInterval > getMinInterval(currentLevelSize)) {
                 currentInterval *= 0.9;
             }
-            spawnMole(); // Spawn the next mole immediately after the hit animation and cleanup
-        }, 300); // Flinch duration
+            spawnMole();
+        }, 300);
     }
 }
 
 function spawnMole() {
     if (gamePaused) return;
 
-    // Clean up previously active mole if it exists and wasn't hit
     if (activeMoleIndex !== -1 && currentHoleWrappers[activeMoleIndex]) {
         const prevHoleWrapper = currentHoleWrappers[activeMoleIndex];
         const prevHamster = prevHoleWrapper.querySelector('.hamster');
-        
         prevHoleWrapper.classList.remove("active");
         prevHoleWrapper.classList.remove("glow");
         prevHamster.removeEventListener("click", handleHamsterHit);
@@ -194,12 +186,10 @@ function spawnMole() {
     const hamsterDiv = holeWrapper.querySelector('.hamster');
 
     activeMoleIndex = idx;
-
     holeWrapper.classList.add("active");
     holeWrapper.classList.add("glow");
     hamsterDiv.addEventListener("click", handleHamsterHit);
 
-    // Set a timeout for this new hamster's natural disappearance
     spawnTimer = setTimeout(() => {
         if (holeWrapper.classList.contains("active")) {
             holeWrapper.classList.remove("active");
@@ -207,11 +197,10 @@ function spawnMole() {
             hamsterDiv.removeEventListener("click", handleHamsterHit);
             hamsterDiv.classList.remove('flinch');
             activeMoleIndex = -1;
-            spawnMole(); // Spawn the next mole when this one times out
+            spawnMole();
         }
     }, currentInterval);
 }
-
 
 function startGame(levelSize) {
     currentLevelSize = levelSize;
@@ -219,21 +208,25 @@ function startGame(levelSize) {
     currentInterval = baseInterval;
     gamePaused = false;
     activeMoleIndex = -1;
+    accumulatedPausedTime = 0;
+    lastResumeTime = Date.now();
+
     pauseResumeButton.textContent = "Pause";
-    
+    timeLeft = totalGameTime;
+    timerDisplay.textContent = `Time: ${timeLeft}s`;
+
     scoreDisplay.textContent = `Score: ${score}`;
     levelHighScoreDisplay.textContent = `High Score for this Level: ${highScores[currentLevelSize]}`;
     currentLevelDisplay.textContent = `Level: ${getLevelName(currentLevelSize)}`;
 
-    // Create grid and then show the game page
     createGrid(currentLevelSize);
-    showPage(gamePage); // Navigate to game page
+    showPage(gamePage);
 
-    // Start spawning moles after a short delay to allow page transition
     setTimeout(() => {
-        clearTimeout(spawnTimer); // Clear any old timers
+        clearTimeout(spawnTimer);
         spawnMole();
-    }, 500); // Wait for page transition (0.5s)
+        startTimer();
+    }, 500);
 }
 
 function togglePauseGame() {
@@ -242,7 +235,6 @@ function togglePauseGame() {
         if (activeMoleIndex !== -1 && currentHoleWrappers[activeMoleIndex]) {
             const holeWrapper = currentHoleWrappers[activeMoleIndex];
             const hamsterDiv = holeWrapper.querySelector('.hamster');
-            
             holeWrapper.classList.remove("active");
             holeWrapper.classList.remove("glow");
             hamsterDiv.removeEventListener("click", handleHamsterHit);
@@ -251,26 +243,30 @@ function togglePauseGame() {
         }
         clearTimeout(spawnTimer);
         pauseResumeButton.textContent = "Resume";
+        accumulatedPausedTime += Date.now() - lastResumeTime;
     } else {
-        spawnMole(); 
+        lastResumeTime = Date.now();
+        spawnMole();
         pauseResumeButton.textContent = "Pause";
     }
 }
 
 function endGame() {
     clearTimeout(spawnTimer);
+    clearInterval(timerInterval);
+
     if (activeMoleIndex !== -1 && currentHoleWrappers[activeMoleIndex]) {
         const prevHoleWrapper = currentHoleWrappers[activeMoleIndex];
         const prevHamster = prevHoleWrapper.querySelector('.hamster');
-
         prevHoleWrapper.classList.remove("active");
         prevHoleWrapper.classList.remove("glow");
         prevHamster.removeEventListener("click", handleHamsterHit);
         prevHamster.classList.remove('flinch');
     }
+
     activeMoleIndex = -1;
     gamePaused = true;
-    
+
     finalScoreDisplay.textContent = score;
     newHighScoreMessage.textContent = "";
 
@@ -281,7 +277,7 @@ function endGame() {
         newHighScoreMessage.textContent = "New High Score!";
     }
 
-    showPage(gameOverPage); // Navigate to game over page
+    showPage(gameOverPage);
 }
 
 function getLevelName(size) {
@@ -302,7 +298,7 @@ function getMinInterval(size) {
     }
 }
 
-// --- Event Listeners ---
+// Event Listeners
 levelButtons.forEach(button => {
     button.addEventListener("click", (event) => {
         const selectedLevelSize = parseInt(event.target.dataset.level);
@@ -314,13 +310,11 @@ pauseResumeButton.addEventListener("click", togglePauseGame);
 endGameButton.addEventListener("click", endGame);
 
 playAgainButton.addEventListener("click", () => {
-    showPage(startPage); // Go back to start page
-    loadHighScores(); // Refresh scores on start screen
+    showPage(startPage);
+    loadHighScores();
 });
 
-// Add a resize listener to adjust grid size if window size changes
 window.addEventListener('resize', () => {
-    // Only re-create grid if gamePage is currently active and not paused
     if (gamePage.classList.contains('active') && !gamePaused) {
         clearTimeout(window.resizeTimeout);
         window.resizeTimeout = setTimeout(() => {
@@ -329,9 +323,7 @@ window.addEventListener('resize', () => {
     }
 });
 
-
-// --- Initialization ---
 document.addEventListener("DOMContentLoaded", () => {
     loadHighScores();
-    showPage(startPage); // Start on the level selection page
+    showPage(startPage);
 });
