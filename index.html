@@ -1,59 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Whack-A-Hamster Game</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whack-A-Hamster Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="main-wrapper">
-        <div id="startPage" class="game-page active">
-            <div class="game-container">
-                <h1>Whack-A-Hamster</h1>
-                <h2>Select Your Challenge!</h2>
-                <div class="level-selection-buttons">
-                    <button class="game-button level-button" data-level="3">Easy</button>
-                    <button class="game-button level-button" data-level="4">Intermediate</button>
-                    <button class="game-button level-button" data-level="5">Master</button>
-                </div>
-                <div class="high-scores">
-                    <h3>High Scores:</h3>
-                    <p>Easy: <span id="highScoreBeginner">0</span></p>
-                    <p>Intermediate: <span id="highScoreIntermediate">0</span></p>
-                    <p>Master: <span id="highScoreMaster">0</span></p>
-                </div>
-            </div>
+  <div class="main-wrapper">
+    <!-- Start Page -->
+    <div id="startPage" class="game-page active">
+      <div class="game-container">
+        <h1>Whack-A-Hamster</h1>
+        <h2>Select Your Challenge!</h2>
+        <div class="level-selection-buttons">
+          <button class="game-button level-button" data-level="3">Easy</button>
+          <button class="game-button level-button" data-level="4">Intermediate</button>
+          <button class="game-button level-button" data-level="5">Master</button>
         </div>
-
-        <div id="gamePage" class="game-page">
-            <div class="game-container">
-                <h1>Whack-A-Hamster</h1>
-                <div class="game-info">
-                    <div id="currentLevelDisplay">Level: Easy</div>
-                    <div id="scoreDisplay">Score: 0</div>
-                    <div id="levelHighScoreDisplay">High Score for this Level: 0</div>
-                </div>
-                <div id="grid-container">
-                    </div>
-                <div class="game-buttons">
-                    <button id="pauseResumeButton" class="game-button">Pause</button>
-                    <button id="endGameButton" class="game-button">End Game</button>
-                </div>
-            </div>
+        <div class="high-scores">
+          <h3>High Scores:</h3>
+          <p>Easy: <span id="highScoreBeginner">0</span></p>
+          <p>Intermediate: <span id="highScoreIntermediate">0</span></p>
+          <p>Master: <span id="highScoreMaster">0</span></p>
         </div>
-
-        <div id="gameOverPage" class="game-page">
-            <div class="game-container">
-                <h1>Whack-A-Hamster</h1>
-                <h2>Game Over!</h2>
-                <p>Your Final Score: <span id="finalScore">0</span></p>
-                <p><span id="newHighScoreMessage"></span></p>
-                <button id="playAgainButton" class="game-button">Play Again</button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Game Page -->
+    <div id="gamePage" class="game-page">
+      <div class="game-container">
+        <h1>Whack-A-Hamster</h1>
+        <div class="game-info">
+          <div id="currentLevelDisplay">Level: Easy</div>
+          <div id="scoreDisplay">Score: 0</div>
+          <div id="levelHighScoreDisplay">High Score for this Level: 0</div>
+          <div id="timerDisplay">Time: 60s</div>
+        </div>
+        <div id="grid-container"></div>
+        <div class="game-buttons">
+          <button id="pauseResumeButton" class="game-button">Pause</button>
+          <button id="endGameButton" class="game-button">End Game</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Page -->
+    <div id="gameOverPage" class="game-page">
+      <div class="game-container">
+        <h1>Whack-A-Hamster</h1>
+        <h2>Game Over!</h2>
+        <p>Your Final Score: <span id="finalScore">0</span></p>
+        <p><span id="newHighScoreMessage"></span></p>
+        <button id="playAgainButton" class="game-button">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
